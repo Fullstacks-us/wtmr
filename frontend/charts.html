@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Visualization</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .nav-links {
+            margin-bottom: 20px;
+        }
+        .nav-links a {
+            margin-right: 15px;
+            text-decoration: none;
+            color: #666;
+        }
+        .chart-container {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .chart-container h2 {
+            margin-top: 0;
+        }
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+        }
+        .date-range {
+            margin: 15px 0;
+        }
+        .date-range input {
+            margin: 0 10px;
+        }
+        .chart-options {
+            margin: 15px 0;
+        }
+        select {
+            padding: 5px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="history.html">History</a>
+        <a href="export.html">Export</a>
+    </div>
+
+    <h1>Data Visualization</h1>
+
+    <div class="chart-container">
+        <h2>Water Test Results</h2>
+        <div class="date-range">
+            <label>Date Range:</label>
+            <input type="date" id="water-date-from">
+            <input type="date" id="water-date-to">
+        </div>
+        <div class="chart-options">
+            <select id="water-chart-type">
+                <option value="line">Line Chart</option>
+                <option value="bar">Bar Chart</option>
+            </select>
+            <label>
+                <input type="checkbox" id="show-averages" checked>
+                Show Averages
+            </label>
+        </div>
+        <div class="chart-wrapper">
+            <canvas id="waterChart"></canvas>
+        </div>
+    </div>
+
+    <div class="chart-container">
+        <h2>Water Meter Usage</h2>
+        <div class="date-range">
+            <label>Date Range:</label>
+            <input type="date" id="meter-date-from">
+            <input type="date" id="meter-date-to">
+        </div>
+        <div class="chart-wrapper">
+            <canvas id="meterChart"></canvas>
+        </div>
+    </div>
+
+    <div class="chart-container">
+        <h2>Mileage Tracking</h2>
+        <div class="date-range">
+            <label>Date Range:</label>
+            <input type="date" id="mileage-date-from">
+            <input type="date" id="mileage-date-to">
+        </div>
+        <div class="chart-options">
+            <select id="mileage-chart-type">
+                <option value="bar">Daily Total</option>
+                <option value="line">Cumulative</option>
+            </select>
+        </div>
+        <div class="chart-wrapper">
+            <canvas id="mileageChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        let waterChart, meterChart, mileageChart;
+
+        async function loadWaterData() {
+            const fromDate = document.getElementById('water-date-from').value;
+            const toDate = document.getElementById('water-date-to').value;
+            const chartType = document.getElementById('water-chart-type').value;
+            const showAverages = document.getElementById('show-averages').checked;
+
+            try {
+                const response = await fetch(`/api/water-logs?from=${fromDate}&to=${toDate}`);
+                const data = await response.json();
+
+                const dates = data.map(d => new Date(d.timestamp).toLocaleDateString());
+                const ph = data.map(d => d.ph);
+                const chlorine = data.map(d => d.chlorine);
+                const hardness = data.map(d => d.hardness);
+
+                if (waterChart) waterChart.destroy();
+
+                waterChart = new Chart(document.getElementById('waterChart'), {
+                    type: chartType,
+                    data: {
+                        labels: dates,
+                        datasets: [
+                            {
+                                label: 'pH',
+                                data: ph,
+                                borderColor: 'rgb(75, 192, 192)',
+                                tension: 0.1
+                            },
+                            {
+                                label: 'Chlorine',
+                                data: chlorine,
+                                borderColor: 'rgb(255, 99, 132)',
+                                tension: 0.1
+                            },
+                            {
+                                label: 'Hardness',
+                                data: hardness,
+                                borderColor: 'rgb(54, 162, 235)',
+                                tension: 0.1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            annotation: showAverages ? {
+                                annotations: {
+                                    phAvg: {
+                                        type: 'line',
+                                        yMin: ph.reduce((a, b) => a + b) / ph.length,
+                                        yMax: ph.reduce((a, b) => a + b) / ph.length,
+                                        borderColor: 'rgb(75, 192, 192)',
+                                        borderWidth: 2,
+                                        label: {
+                                            content: 'pH Average',
+                                            enabled: true
+                                        }
+                                    }
+                                }
+                            } : {}
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading water data:', error);
+            }
+        }
+
+        async function loadMeterData() {
+            const fromDate = document.getElementById('meter-date-from').value;
+            const toDate = document.getElementById('meter-date-to').value;
+
+            try {
+                const response = await fetch(`/api/meter-logs?from=${fromDate}&to=${toDate}`);
+                const data = await response.json();
+
+                const dates = data.map(d => new Date(d.timestamp).toLocaleDateString());
+                const deltas = data.map(d => d.delta);
+
+                if (meterChart) meterChart.destroy();
+
+                meterChart = new Chart(document.getElementById('meterChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: dates,
+                        datasets: [{
+                            label: 'Daily Usage (Gallons)',
+                            data: deltas,
+                            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                            borderColor: 'rgb(54, 162, 235)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading meter data:', error);
+            }
+        }
+
+        async function loadMileageData() {
+            const fromDate = document.getElementById('mileage-date-from').value;
+            const toDate = document.getElementById('mileage-date-to').value;
+            const chartType = document.getElementById('mileage-chart-type').value;
+
+            try {
+                const response = await fetch(`/api/mileage-logs?from=${fromDate}&to=${toDate}`);
+                const data = await response.json();
+
+                const dates = data.map(d => new Date(d.timestamp).toLocaleDateString());
+                const distances = data.map(d => d.distance);
+
+                if (mileageChart) mileageChart.destroy();
+
+                mileageChart = new Chart(document.getElementById('mileageChart'), {
+                    type: chartType,
+                    data: {
+                        labels: dates,
+                        datasets: [{
+                            label: 'Mileage',
+                            data: distances,
+                            backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                            borderColor: 'rgb(75, 192, 192)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading mileage data:', error);
+            }
+        }
+
+        // Event listeners
+        document.getElementById('water-date-from').addEventListener('change', loadWaterData);
+        document.getElementById('water-date-to').addEventListener('change', loadWaterData);
+        document.getElementById('water-chart-type').addEventListener('change', loadWaterData);
+        document.getElementById('show-averages').addEventListener('change', loadWaterData);
+
+        document.getElementById('meter-date-from').addEventListener('change', loadMeterData);
+        document.getElementById('meter-date-to').addEventListener('change', loadMeterData);
+
+        document.getElementById('mileage-date-from').addEventListener('change', loadMileageData);
+        document.getElementById('mileage-date-to').addEventListener('change', loadMileageData);
+        document.getElementById('mileage-chart-type').addEventListener('change', loadMileageData);
+
+        // Initial load
+        loadWaterData();
+        loadMeterData();
+        loadMileageData();
+    </script>
+</body>
+</html> 

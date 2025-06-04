@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Export Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .nav-links {
+            margin-bottom: 20px;
+        }
+        .nav-links a {
+            margin-right: 15px;
+            text-decoration: none;
+            color: #666;
+        }
+        .export-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .export-section h2 {
+            margin-top: 0;
+        }
+        .export-options {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .date-range {
+            margin: 15px 0;
+        }
+        .date-range input {
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="history.html">History</a>
+    </div>
+
+    <h1>Export Data</h1>
+
+    <div class="export-section">
+        <h2>Water Tests</h2>
+        <div class="date-range">
+            <label>Date Range:</label>
+            <input type="date" id="water-date-from">
+            <input type="date" id="water-date-to">
+        </div>
+        <div class="export-options">
+            <button onclick="exportData('water', 'csv')">Download CSV</button>
+            <button onclick="exportData('water', 'json')">Download JSON</button>
+        </div>
+    </div>
+
+    <div class="export-section">
+        <h2>Water Meter Readings</h2>
+        <div class="date-range">
+            <label>Date Range:</label>
+            <input type="date" id="meter-date-from">
+            <input type="date" id="meter-date-to">
+        </div>
+        <div class="export-options">
+            <button onclick="exportData('meter', 'csv')">Download CSV</button>
+            <button onclick="exportData('meter', 'json')">Download JSON</button>
+        </div>
+    </div>
+
+    <div class="export-section">
+        <h2>Mileage Logs</h2>
+        <div class="date-range">
+            <label>Date Range:</label>
+            <input type="date" id="mileage-date-from">
+            <input type="date" id="mileage-date-to">
+        </div>
+        <div class="export-options">
+            <button onclick="exportData('mileage', 'csv')">Download CSV</button>
+            <button onclick="exportData('mileage', 'json')">Download JSON</button>
+        </div>
+    </div>
+
+    <div class="export-section">
+        <h2>All Data</h2>
+        <div class="date-range">
+            <label>Date Range:</label>
+            <input type="date" id="all-date-from">
+            <input type="date" id="all-date-to">
+        </div>
+        <div class="export-options">
+            <button onclick="exportAllData('csv')">Download All CSV</button>
+            <button onclick="exportAllData('json')">Download All JSON</button>
+        </div>
+    </div>
+
+    <script>
+        async function exportData(type, format) {
+            const fromDate = document.getElementById(`${type}-date-from`).value;
+            const toDate = document.getElementById(`${type}-date-to`).value;
+            
+            try {
+                const response = await fetch(`/api/export/${type}?format=${format}&from=${fromDate}&to=${toDate}`);
+                if (!response.ok) throw new Error('Export failed');
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${type}_export.${format}`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                a.remove();
+            } catch (error) {
+                console.error('Export error:', error);
+                alert('Error exporting data');
+            }
+        }
+
+        async function exportAllData(format) {
+            const fromDate = document.getElementById('all-date-from').value;
+            const toDate = document.getElementById('all-date-to').value;
+            
+            try {
+                const response = await fetch(`/api/export/all?format=${format}&from=${fromDate}&to=${toDate}`);
+                if (!response.ok) throw new Error('Export failed');
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `all_data_export.${format}`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                a.remove();
+            } catch (error) {
+                console.error('Export error:', error);
+                alert('Error exporting data');
+            }
+        }
+    </script>
+</body>
+</html> 

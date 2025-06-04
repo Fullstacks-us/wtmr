@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Mileage Log</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .nav-links {
+            margin-bottom: 20px;
+        }
+        .nav-links a {
+            margin-right: 15px;
+            text-decoration: none;
+            color: #666;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="number"],
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            margin-left: 5px;
+            cursor: help;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .checkbox-group {
+            margin: 10px 0;
+        }
+        .checkbox-group label {
+            display: inline;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="history.html">History</a>
+    </div>
+
+    <h1>Edit Mileage Log</h1>
+
+    <form id="editForm">
+        <div class="form-group">
+            <label for="start_location">Start Location</label>
+            <input type="text" id="start_location" name="start_location" required>
+        </div>
+
+        <div class="form-group">
+            <label for="end_location">End Location</label>
+            <input type="text" id="end_location" name="end_location" required>
+        </div>
+
+        <div class="form-group">
+            <label for="distance">Distance (miles)
+                <span class="tooltip">?
+                    <span class="tooltiptext">Enter the total distance traveled in miles</span>
+                </span>
+            </label>
+            <input type="number" id="distance" name="distance" step="0.1" required>
+        </div>
+
+        <div class="form-group">
+            <label for="purpose">Purpose</label>
+            <textarea id="purpose" name="purpose" rows="3" required></textarea>
+        </div>
+
+        <div class="checkbox-group">
+            <input type="checkbox" id="billable" name="billable">
+            <label for="billable">Billable</label>
+        </div>
+
+        <button type="submit">Save Changes</button>
+    </form>
+
+    <script>
+        let formChanged = false;
+        const logId = new URLSearchParams(window.location.search).get('id');
+
+        // Load existing data
+        async function loadLogData() {
+            try {
+                const response = await fetch(`/api/mileage-log/${logId}`);
+                const data = await response.json();
+
+                // Fill form fields
+                document.getElementById('start_location').value = data.start_location;
+                document.getElementById('end_location').value = data.end_location;
+                document.getElementById('distance').value = data.distance;
+                document.getElementById('purpose').value = data.purpose;
+                document.getElementById('billable').checked = data.billable;
+            } catch (error) {
+                console.error('Error loading log:', error);
+                alert('Error loading log data');
+            }
+        }
+
+        // Form change tracking
+        document.getElementById('editForm').addEventListener('input', () => {
+            formChanged = true;
+        });
+
+        // Unsaved changes warning
+        window.addEventListener('beforeunload', (e) => {
+            if (formChanged) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        // Form submission
+        document.getElementById('editForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {
+                start_location: formData.get('start_location'),
+                end_location: formData.get('end_location'),
+                distance: parseFloat(formData.get('distance')),
+                purpose: formData.get('purpose'),
+                billable: formData.get('billable') === 'on'
+            };
+
+            try {
+                const response = await fetch(`/api/mileage-log/${logId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) throw new Error('Update failed');
+
+                formChanged = false;
+                alert('Changes saved successfully');
+                window.location.href = 'history.html';
+            } catch (error) {
+                console.error('Error saving changes:', error);
+                alert('Error saving changes');
+            }
+        });
+
+        // Initial load
+        loadLogData();
+    </script>
+</body>
+</html> 

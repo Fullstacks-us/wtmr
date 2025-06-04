@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Water/Mileage Logger</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Water/Mileage Logger</h1>
+    
+    <div class="button-group">
+        <button onclick="location.href='form-water-test.html'">New Water Test</button>
+        <button onclick="location.href='form-meter.html'">New Water Meter Reading</button>
+        <button onclick="location.href='form-mileage.html'">New Mileage Log</button>
+        <button onclick="location.href='history.html'">View History</button>
+        <button onclick="location.href='export.html'">Export Data</button>
+    </div>
+
+    <script>
+        // Check API health on page load
+        fetch('/health')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status !== 'healthy') {
+                    alert('API is not responding correctly. Please check the server.');
+                }
+            })
+            .catch(error => {
+                alert('Cannot connect to API. Please check the server.');
+            });
+    </script>
+</body>
+</html> 

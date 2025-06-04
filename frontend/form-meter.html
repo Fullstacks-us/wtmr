@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Water Meter Reading</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .last-reading {
+            background-color: #f0f0f0;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .delta {
+            font-weight: bold;
+            color: #0066cc;
+        }
+    </style>
+</head>
+<body>
+    <h1>New Water Meter Reading</h1>
+    
+    <div class="last-reading">
+        Last Reading: <span id="lastReading">Loading...</span>
+    </div>
+
+    <form id="meterForm">
+        <div class="form-group">
+            <label for="reading">Current Reading</label>
+            <input type="number" id="reading" name="reading" step="0.01" required>
+            <div id="deltaDisplay" class="delta"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="notes">Notes</label>
+            <input type="text" id="notes" name="notes">
+        </div>
+
+        <div class="form-group">
+            <label for="image">Meter Photo (Optional)</label>
+            <input type="file" id="image" name="image" accept="image/*" capture="environment">
+        </div>
+
+        <button type="submit">Save Reading</button>
+    </form>
+
+    <script>
+        // Load last reading on page load
+        fetch('/api/meter-last')
+            .then(response => response.json())
+            .then(data => {
+                const lastReading = data.last_reading;
+                document.getElementById('lastReading').textContent = 
+                    lastReading ? lastReading : 'No previous readings';
+            })
+            .catch(error => {
+                document.getElementById('lastReading').textContent = 'Error loading last reading';
+            });
+
+        // Calculate delta when reading changes
+        document.getElementById('reading').addEventListener('input', function() {
+            const currentReading = parseFloat(this.value);
+            const lastReading = parseFloat(document.getElementById('lastReading').textContent);
+            
+            if (!isNaN(currentReading) && !isNaN(lastReading)) {
+                const delta = currentReading - lastReading;
+                document.getElementById('deltaDisplay').textContent = 
+                    `Delta: ${delta.toFixed(2)}`;
+            } else {
+                document.getElementById('deltaDisplay').textContent = '';
+            }
+        });
+
+        // Handle form submission
+        document.getElementById('meterForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            
+            try {
+                const response = await fetch('/api/meter-log', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    alert(`Reading saved successfully! Delta: ${result.delta}`);
+                    window.location.href = 'index.html';
+                } else {
+                    alert('Error saving reading. Please try again.');
+                }
+            } catch (error) {
+                alert('Error connecting to server. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html> 

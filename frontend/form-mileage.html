@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log Mileage</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .nav-links {
+            margin-bottom: 20px;
+        }
+        .nav-links a {
+            margin-right: 15px;
+            text-decoration: none;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="history.html">History</a>
+    </div>
+
+    <h1>Log Mileage</h1>
+    
+    <form id="mileageForm">
+        <div class="form-group">
+            <label for="start_location">Start Location:</label>
+            <input type="text" id="start_location" name="start_location" required>
+        </div>
+
+        <div class="form-group">
+            <label for="end_location">End Location:</label>
+            <input type="text" id="end_location" name="end_location" required>
+        </div>
+
+        <div class="form-group">
+            <label for="distance">Distance (miles):</label>
+            <input type="number" id="distance" name="distance" step="0.1" min="0" required>
+        </div>
+
+        <div class="form-group">
+            <label for="purpose">Purpose:</label>
+            <input type="text" id="purpose" name="purpose">
+        </div>
+
+        <div class="form-group checkbox-group">
+            <input type="checkbox" id="billable" name="billable">
+            <label for="billable">Billable</label>
+        </div>
+
+        <button type="submit">Save Mileage Log</button>
+    </form>
+
+    <script>
+        document.getElementById('mileageForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            
+            try {
+                const response = await fetch('/api/mileage-log', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    alert('Mileage logged successfully!');
+                    window.location.href = 'history.html';
+                } else {
+                    alert('Error saving mileage log');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error saving mileage log');
+            }
+        });
+
+        // Warn about unsaved changes
+        let formChanged = false;
+        const form = document.getElementById('mileageForm');
+        
+        form.addEventListener('input', () => {
+            formChanged = true;
+        });
+
+        window.addEventListener('beforeunload', (e) => {
+            if (formChanged) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        form.addEventListener('submit', () => {
+            formChanged = false;
+        });
+    </script>
+</body>
+</html> 
