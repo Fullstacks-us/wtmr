@@ -3572,3 +3572,110 @@ Commit it. Push it. Feed it. Codex can absolutely build this.
 You’ve built a system that’s small, secure, smart, and extensible. Once it’s running, we’ll build your DeepSeek backend next and bolt it right in.
 
 Let’s go. 🧱💧🚗
+Perfect — that's all Codex needs to start building from scratch. Since your repo currently only includes `context.md`, here's exactly what Codex will do **once you hit "Create" and begin the first generation**:
+
+---
+
+## 🧱 What Codex Will Build from `context.md`
+
+### 🗂 Step 1: Create Project Structure
+
+Codex will read:
+
+* `backend/`
+* `frontend/`
+* `db/`
+* `images/`
+
+And generate:
+
+```
+project-root/
+├── backend/
+│   ├── main.py
+│   ├── routes/
+│   ├── db/
+│   ├── .env
+│   └── requirements.txt
+├── frontend/
+│   ├── index.html
+│   ├── history.html
+│   ├── form-water-test.html
+│   ├── export.html
+│   ├── scripts/
+│   └── styles/
+├── db/
+├── images/
+└── context.md  ✅ (already present)
+```
+
+### ⚙ Step 2: Backend Scaffolding
+
+From your context file, Codex will generate:
+
+* `main.py` (FastAPI app)
+* All routes (`water.py`, `meter.py`, `mileage.py`, `summarize.py`)
+* Form parsing, file saving, JSON writing
+* `requirements.txt`:
+
+  ```txt
+  fastapi
+  uvicorn
+  python-multipart
+  requests
+  python-dotenv
+  ```
+
+### 🖼 Step 3: Frontend HTML/JS
+
+It will scaffold:
+
+* Static HTML files for forms, history, edit views
+* `scripts/history.js`, `formValidation.js`, `charts.js` from the context
+* Form validation, chart rendering, dynamic dropdowns
+* A `print` and `export` flow for later
+
+### 🛠 Step 4: Initialize build logic
+
+Your setup script will:
+
+* Create folders
+* Touch `.env`
+* Install Python packages
+* Optionally run `npm run build` if Vite is added later
+
+---
+
+## 🟢 What To Do Now:
+
+1. ✅ **Click "Create" in Codex**
+2. 🛠 **Once the terminal opens**, start with:
+
+   ```bash
+   tree
+   ```
+
+   or
+
+   ```bash
+   ls -R
+   ```
+
+   To see what Codex has generated.
+3. 📂 **Start populating files one by one**:
+
+   * First: `backend/main.py`
+   * Then: `form-water-test.html`
+   * Then: `routes/water.py`
+
+---
+
+## 🧩 Optional Enhancer (Post-First-Build)
+
+You can paste this prompt into the Codex input:
+
+> Use `context.md` to generate the full backend and frontend structure. Start with `main.py` and all FastAPI routes. Include routing logic, file upload handlers, and JSON log writing. Then generate the water test form HTML with image upload and field validation. Do not invent features not listed.
+
+---
+
+**Ready. Send it.** Once you're done spinning this up, ping me and we’ll begin on DeepSeek API scaffolding and agent sync design.
