@@ -7,6 +7,15 @@ import os
 
 router = APIRouter()
 
+def get_db_path():
+    return "db/mileage_log.json"
+
+def ensure_db_exists():
+    os.makedirs(os.path.dirname(get_db_path()), exist_ok=True)
+    if not os.path.exists(get_db_path()):
+        with open(get_db_path(), "w") as f:
+            pass
+
 @router.post("/api/mileage-log")
 async def create_mileage_log(
     start_location: str = Form(...),
@@ -15,6 +24,7 @@ async def create_mileage_log(
     purpose: str = Form(""),
     billable: bool = Form(False)
 ):
+    ensure_db_exists()
     log = {
         "id": str(uuid4()),
         "timestamp": datetime.now().isoformat(),
@@ -26,16 +36,17 @@ async def create_mileage_log(
         "category": "mileage"
     }
     
-    with open("mileage_log.json", "a") as f:
+    with open(get_db_path(), "a") as f:
         f.write(json.dumps(log) + "\n")
     
     return log
 
 @router.get("/api/mileage-logs")
 async def get_mileage_logs():
+    ensure_db_exists()
     logs = []
     try:
-        with open("mileage_log.json", "r") as f:
+        with open(get_db_path(), "r") as f:
             for line in f:
                 logs.append(json.loads(line))
     except FileNotFoundError:
@@ -44,8 +55,9 @@ async def get_mileage_logs():
 
 @router.get("/api/mileage-log/{log_id}")
 async def get_mileage_log(log_id: str):
+    ensure_db_exists()
     try:
-        with open("mileage_log.json", "r") as f:
+        with open(get_db_path(), "r") as f:
             for line in f:
                 log = json.loads(line)
                 if log["id"] == log_id:
@@ -63,11 +75,12 @@ async def update_mileage_log(
     purpose: str = Form(""),
     billable: bool = Form(False)
 ):
+    ensure_db_exists()
     logs = []
     found = False
-    
+
     try:
-        with open("mileage_log.json", "r") as f:
+        with open(get_db_path(), "r") as f:
             for line in f:
                 log = json.loads(line)
                 if log["id"] == log_id:
@@ -86,7 +99,7 @@ async def update_mileage_log(
     if not found:
         raise HTTPException(status_code=404, detail="Log not found")
     
-    with open("mileage_log.json", "w") as f:
+    with open(get_db_path(), "w") as f:
         for log in logs:
             f.write(json.dumps(log) + "\n")
     
@@ -94,11 +107,12 @@ async def update_mileage_log(
 
 @router.delete("/api/mileage-log/{log_id}")
 async def delete_mileage_log(log_id: str):
+    ensure_db_exists()
     logs = []
     found = False
-    
+
     try:
-        with open("mileage_log.json", "r") as f:
+        with open(get_db_path(), "r") as f:
             for line in f:
                 log = json.loads(line)
                 if log["id"] != log_id:
@@ -111,7 +125,7 @@ async def delete_mileage_log(log_id: str):
     if not found:
         raise HTTPException(status_code=404, detail="Log not found")
     
-    with open("mileage_log.json", "w") as f:
+    with open(get_db_path(), "w") as f:
         for log in logs:
             f.write(json.dumps(log) + "\n")
     
