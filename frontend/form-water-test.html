@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Water Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .tooltip {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 2px;
+        }
+    </style>
+</head>
+<body>
+    <h1>New Water Test</h1>
+    <form id="waterTestForm">
+        <div class="form-group">
+            <label for="ph">pH Level</label>
+            <input type="number" id="ph" name="ph" step="0.01" required>
+            <div class="tooltip">Ideal range: 7.2-7.8</div>
+        </div>
+
+        <div class="form-group">
+            <label for="chlorine">Chlorine (ppm)</label>
+            <input type="number" id="chlorine" name="chlorine" step="0.01" required>
+            <div class="tooltip">Ideal range: 1.0-3.0 ppm</div>
+        </div>
+
+        <div class="form-group">
+            <label for="hardness">Hardness (ppm)</label>
+            <input type="number" id="hardness" name="hardness" step="0.01" required>
+            <div class="tooltip">Ideal range: 150-250 ppm</div>
+        </div>
+
+        <div class="form-group">
+            <label for="site">Test Site #</label>
+            <input type="text" id="site" name="site" required>
+        </div>
+
+        <div class="form-group">
+            <label for="notes">Notes</label>
+            <input type="text" id="notes" name="notes">
+        </div>
+
+        <div class="form-group">
+            <label for="image">Test Photo</label>
+            <input type="file" id="image" name="image" accept="image/*" capture="environment" required>
+        </div>
+
+        <button type="submit">Save Test</button>
+    </form>
+
+    <script>
+        document.getElementById('waterTestForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            
+            try {
+                const response = await fetch('/api/water-log', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    alert('Test saved successfully!');
+                    window.location.href = 'index.html';
+                } else {
+                    alert('Error saving test. Please try again.');
+                }
+            } catch (error) {
+                alert('Error connecting to server. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html> 

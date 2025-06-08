@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Water Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .nav-links {
+            margin-bottom: 20px;
+        }
+        .nav-links a {
+            margin-right: 15px;
+            text-decoration: none;
+            color: #666;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="number"],
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            margin-left: 5px;
+            cursor: help;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .current-image {
+            margin: 10px 0;
+            max-width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="history.html">History</a>
+    </div>
+
+    <h1>Edit Water Test</h1>
+
+    <form id="editForm">
+        <div class="form-group">
+            <label for="ph">pH Level
+                <span class="tooltip">?
+                    <span class="tooltiptext">Ideal range: 7.2-7.8</span>
+                </span>
+            </label>
+            <input type="number" id="ph" name="ph" step="0.01" required>
+        </div>
+
+        <div class="form-group">
+            <label for="chlorine">Chlorine (ppm)
+                <span class="tooltip">?
+                    <span class="tooltiptext">Ideal range: 1.0-3.0 ppm</span>
+                </span>
+            </label>
+            <input type="number" id="chlorine" name="chlorine" step="0.1" required>
+        </div>
+
+        <div class="form-group">
+            <label for="hardness">Hardness (ppm)
+                <span class="tooltip">?
+                    <span class="tooltiptext">Ideal range: 150-250 ppm</span>
+                </span>
+            </label>
+            <input type="number" id="hardness" name="hardness" step="1" required>
+        </div>
+
+        <div class="form-group">
+            <label for="site">Test Site #</label>
+            <input type="text" id="site" name="site" list="sites" required>
+            <datalist id="sites"></datalist>
+        </div>
+
+        <div class="form-group">
+            <label for="notes">Notes</label>
+            <textarea id="notes" name="notes" rows="3"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Current Image</label>
+            <div id="currentImage" class="current-image"></div>
+        </div>
+
+        <button type="submit">Save Changes</button>
+    </form>
+
+    <script>
+        let formChanged = false;
+        const logId = new URLSearchParams(window.location.search).get('id');
+
+        // Load existing data
+        async function loadLogData() {
+            try {
+                const response = await fetch(`/api/water-log/${logId}`);
+                const data = await response.json();
+
+                // Fill form fields
+                document.getElementById('ph').value = data.ph;
+                document.getElementById('chlorine').value = data.chlorine;
+                document.getElementById('hardness').value = data.hardness;
+                document.getElementById('site').value = data.site;
+                document.getElementById('notes').value = data.notes || '';
+
+                // Show current image
+                if (data.image_path) {
+                    const img = document.createElement('img');
+                    img.src = data.image_path;
+                    img.alt = 'Current test image';
+                    document.getElementById('currentImage').appendChild(img);
+                }
+
+                // Load site options
+                const sitesResponse = await fetch('/api/sites');
+                const sites = await sitesResponse.json();
+                const datalist = document.getElementById('sites');
+                sites.forEach(site => {
+                    const option = document.createElement('option');
+                    option.value = site;
+                    datalist.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading log:', error);
+                alert('Error loading log data');
+            }
+        }
+
+        // Form change tracking
+        document.getElementById('editForm').addEventListener('input', () => {
+            formChanged = true;
+        });
+
+        // Unsaved changes warning
+        window.addEventListener('beforeunload', (e) => {
+            if (formChanged) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        // Form submission
+        document.getElementById('editForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            try {
+                const response = await fetch(`/api/water-log/${logId}`, {
+                    method: 'PUT',
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error('Update failed');
+
+                formChanged = false;
+                alert('Changes saved successfully');
+                window.location.href = 'history.html';
+            } catch (error) {
+                console.error('Error saving changes:', error);
+                alert('Error saving changes');
+            }
+        });
+
+        // Initial load
+        loadLogData();
+    </script>
+</body>
+</html> 

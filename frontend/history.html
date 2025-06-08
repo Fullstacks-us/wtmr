@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log History</title>
+    <style>
+        .tab {
+            display: none;
+        }
+        .tab.active {
+            display: block;
+        }
+        .tab-buttons {
+            margin-bottom: 20px;
+        }
+        .filters {
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 4px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background: #f0f0f0;
+        }
+        .photo-link {
+            color: blue;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Log History</h1>
+    
+    <div class="tab-buttons">
+        <button onclick="switchTab('water')">Water Tests</button>
+        <button onclick="switchTab('meter')">Water Meter</button>
+        <button onclick="switchTab('mileage')">Mileage</button>
+    </div>
+
+    <div class="filters">
+        <div>
+            <label>Date Range:</label>
+            <input type="date" id="date-from" onchange="applyFilters()">
+            <input type="date" id="date-to" onchange="applyFilters()">
+        </div>
+        <div>
+            <label>Category:</label>
+            <select id="category-filter" onchange="applyFilters()">
+                <option value="">All Categories</option>
+            </select>
+        </div>
+        <div>
+            <label>Search:</label>
+            <input type="text" id="search-filter" placeholder="Search all fields..." oninput="applyFilters()">
+        </div>
+    </div>
+
+    <div id="water-tab" class="tab active">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Category</th>
+                    <th>pH</th>
+                    <th>Chlorine</th>
+                    <th>Hardness</th>
+                    <th>Site</th>
+                    <th>Notes</th>
+                    <th>Photo</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="water-results"></tbody>
+        </table>
+    </div>
+
+    <div id="meter-tab" class="tab">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Category</th>
+                    <th>Reading</th>
+                    <th>Delta</th>
+                    <th>Notes</th>
+                    <th>Photo</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="meter-results"></tbody>
+        </table>
+    </div>
+
+    <div id="mileage-tab" class="tab">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Category</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Distance</th>
+                    <th>Purpose</th>
+                    <th>Billable</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="mileage-results"></tbody>
+        </table>
+    </div>
+
+    <script>
+        let currentTab = 'water';
+        let allLogs = {
+            water: [],
+            meter: [],
+            mileage: []
+        };
+
+        // Load filter state from URL or localStorage
+        function loadFilterState() {
+            const params = new URLSearchParams(window.location.search);
+            const savedState = localStorage.getItem('filterState') || '{}';
+            const state = JSON.parse(savedState);
+            
+            if (params.has('type')) {
+                currentTab = params.get('type');
+            } else if (state.currentTab) {
+                currentTab = state.currentTab;
+            }
+
+            document.getElementById('date-from').value = state.dateFrom || '';
+            document.getElementById('date-to').value = state.dateTo || '';
+            document.getElementById('search-filter').value = state.search || '';
+            
+            switchTab(currentTab);
+        }
+
+        // Save filter state
+        function saveFilterState() {
+            const state = {
+                currentTab,
+                dateFrom: document.getElementById('date-from').value,
+                dateTo: document.getElementById('date-to').value,
+                search: document.getElementById('search-filter').value
+            };
+            localStorage.setItem('filterState', JSON.stringify(state));
+            
+            // Update URL without reload
+            const url = new URL(window.location);
+            url.searchParams.set('type', currentTab);
+            window.history.pushState({}, '', url);
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(`${tab}-tab`).classList.add('active');
+            saveFilterState();
+            loadLogs(tab);
+        }
+
+        async function loadLogs(type) {
+            try {
+                const response = await fetch(`/api/${type}-logs`);
+                allLogs[type] = await response.json();
+                applyFilters();
+            } catch (error) {
+                console.error('Error loading logs:', error);
+            }
+        }
+
+        function applyFilters() {
+            const dateFrom = document.getElementById('date-from').value;
+            const dateTo = document.getElementById('date-to').value;
+            const category = document.getElementById('category-filter').value;
+            const search = document.getElementById('search-filter').value.toLowerCase();
+
+            const filtered = allLogs[currentTab].filter(log => {
+                const logDate = new Date(log.timestamp);
+                const fromDate = dateFrom ? new Date(dateFrom) : null;
+                const toDate = dateTo ? new Date(dateTo) : null;
+
+                const matchesDate = (!fromDate || logDate >= fromDate) && 
+                                  (!toDate || logDate <= toDate);
+                const matchesCategory = !category || log.category === category;
+                const matchesSearch = !search || 
+                    Object.values(log).some(val => 
+                        String(val).toLowerCase().includes(search));
+
+                return matchesDate && matchesCategory && matchesSearch;
+            });
+
+            displayResults(filtered);
+            saveFilterState();
+        }
+
+        function displayResults(logs) {
+            const tbody = document.getElementById(`${currentTab}-results`);
+            tbody.innerHTML = '';
+
+            logs.forEach(log => {
+                const row = document.createElement('tr');
+                
+                switch(currentTab) {
+                    case 'water':
+                        row.innerHTML = `
+                            <td>${new Date(log.timestamp).toLocaleString()}</td>
+                            <td>${log.category || ''}</td>
+                            <td>${log.ph || ''}</td>
+                            <td>${log.chlorine || ''}</td>
+                            <td>${log.hardness || ''}</td>
+                            <td>${log.site || ''}</td>
+                            <td>${log.notes || ''}</td>
+                            <td>${log.image_path ? 
+                                `<a href="${log.image_path}" target="_blank" class="photo-link">View Photo</a>` : 
+                                ''}</td>
+                            <td>
+                                <a href="edit-${currentTab}.html?id=${log.id}">Edit</a>
+                                <button onclick="deleteLog('${log.id}')">Delete</button>
+                            </td>
+                        `;
+                        break;
+                    case 'meter':
+                        row.innerHTML = `
+                            <td>${new Date(log.timestamp).toLocaleString()}</td>
+                            <td>${log.category || ''}</td>
+                            <td>${log.reading || ''}</td>
+                            <td>${log.delta || ''}</td>
+                            <td>${log.notes || ''}</td>
+                            <td>${log.image_path ? 
+                                `<a href="${log.image_path}" target="_blank" class="photo-link">View Photo</a>` : 
+                                ''}</td>
+                            <td>
+                                <a href="edit-${currentTab}.html?id=${log.id}">Edit</a>
+                                <button onclick="deleteLog('${log.id}')">Delete</button>
+                            </td>
+                        `;
+                        break;
+                    case 'mileage':
+                        row.innerHTML = `
+                            <td>${new Date(log.timestamp).toLocaleString()}</td>
+                            <td>${log.category || ''}</td>
+                            <td>${log.start_location || ''}</td>
+                            <td>${log.end_location || ''}</td>
+                            <td>${log.distance || ''}</td>
+                            <td>${log.purpose || ''}</td>
+                            <td>${log.billable ? 'Yes' : 'No'}</td>
+                            <td>
+                                <a href="edit-${currentTab}.html?id=${log.id}">Edit</a>
+                                <button onclick="deleteLog('${log.id}')">Delete</button>
+                            </td>
+                        `;
+                        break;
+                }
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        async function deleteLog(id) {
+            if (!confirm('Are you sure you want to delete this log?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/${currentTab}-log/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    loadLogs(currentTab);
+                } else {
+                    alert('Error deleting log');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error deleting log');
+            }
+        }
+
+        // Load initial data
+        loadFilterState();
+        loadLogs('water');
+        loadLogs('meter');
+        loadLogs('mileage');
+    </script>
+</body>
+</html> 
