@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Log History</title>
+    <link rel="stylesheet" href="styles.css">
     <style>
         .tab {
             display: none;
@@ -173,11 +174,15 @@
 
         async function loadLogs(type) {
             try {
+                showLoading();
                 const response = await fetch(`/api/${type}-logs`);
                 allLogs[type] = await response.json();
                 applyFilters();
             } catch (error) {
                 console.error('Error loading logs:', error);
+                showError('Error loading logs');
+            } finally {
+                hideLoading();
             }
         }
 
@@ -275,6 +280,7 @@
             }
 
             try {
+                showLoading();
                 const response = await fetch(`/api/${currentTab}-log/${id}`, {
                     method: 'DELETE'
                 });
@@ -282,11 +288,13 @@
                 if (response.ok) {
                     loadLogs(currentTab);
                 } else {
-                    alert('Error deleting log');
+                    showError('Error deleting log');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Error deleting log');
+                showError('Error deleting log');
+            } finally {
+                hideLoading();
             }
         }
 
@@ -296,5 +304,7 @@
         loadLogs('meter');
         loadLogs('mileage');
     </script>
+    <div id="error" class="error-message"></div>
+    <script src="scripts/common.js"></script>
 </body>
-</html> 
+</html>

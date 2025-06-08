@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>New Water Meter Reading</title>
+    <link rel="stylesheet" href="styles.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -69,16 +70,18 @@
 
     <script>
         // Load last reading on page load
+        showLoading();
         fetch('/api/meter-last')
             .then(response => response.json())
             .then(data => {
                 const lastReading = data.last_reading;
-                document.getElementById('lastReading').textContent = 
+                document.getElementById('lastReading').textContent =
                     lastReading ? lastReading : 'No previous readings';
             })
-            .catch(error => {
+            .catch(() => {
                 document.getElementById('lastReading').textContent = 'Error loading last reading';
-            });
+            })
+            .finally(hideLoading);
 
         // Calculate delta when reading changes
         document.getElementById('reading').addEventListener('input', function() {
@@ -97,26 +100,31 @@
         // Handle form submission
         document.getElementById('meterForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const formData = new FormData(e.target);
-            
+            showLoading();
+
             try {
                 const response = await fetch('/api/meter-log', {
                     method: 'POST',
                     body: formData
                 });
-                
+
                 if (response.ok) {
                     const result = await response.json();
                     alert(`Reading saved successfully! Delta: ${result.delta}`);
                     window.location.href = 'index.html';
                 } else {
-                    alert('Error saving reading. Please try again.');
+                    showError('Error saving reading. Please try again.');
                 }
             } catch (error) {
-                alert('Error connecting to server. Please try again.');
+                showError('Error connecting to server. Please try again.');
+            } finally {
+                hideLoading();
             }
         });
     </script>
+    <div id="error" class="error-message"></div>
+    <script src="scripts/common.js"></script>
 </body>
-</html> 
+</html>

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Log Mileage</title>
+    <link rel="stylesheet" href="styles.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -91,24 +92,26 @@
     <script>
         document.getElementById('mileageForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const formData = new FormData(e.target);
-            
+            showLoading();
+
             try {
                 const response = await fetch('/api/mileage-log', {
                     method: 'POST',
                     body: formData
                 });
-                
+
                 if (response.ok) {
-                    alert('Mileage logged successfully!');
                     window.location.href = 'history.html';
                 } else {
-                    alert('Error saving mileage log');
+                    showError('Error saving mileage log');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Error saving mileage log');
+                showError('Error saving mileage log');
+            } finally {
+                hideLoading();
             }
         });
 
@@ -131,5 +134,7 @@
             formChanged = false;
         });
     </script>
+    <div id="error" class="error-message"></div>
+    <script src="scripts/common.js"></script>
 </body>
-</html> 
+</html>

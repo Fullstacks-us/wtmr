@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>New Water Test</title>
+    <link rel="stylesheet" href="styles.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -79,7 +80,8 @@
             e.preventDefault();
             
             const formData = new FormData(e.target);
-            
+            showLoading();
+
             try {
                 const response = await fetch('/api/water-log', {
                     method: 'POST',
@@ -87,15 +89,18 @@
                 });
                 
                 if (response.ok) {
-                    alert('Test saved successfully!');
                     window.location.href = 'index.html';
                 } else {
-                    alert('Error saving test. Please try again.');
+                    showError('Error saving test. Please try again.');
                 }
             } catch (error) {
-                alert('Error connecting to server. Please try again.');
+                showError('Error connecting to server. Please try again.');
+            } finally {
+                hideLoading();
             }
         });
     </script>
+    <div id="error" class="error-message"></div>
+    <script src="scripts/common.js"></script>
 </body>
-</html> 
+</html>

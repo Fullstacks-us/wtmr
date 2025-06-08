@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Visualization</title>
+    <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -120,6 +121,7 @@
             const showAverages = document.getElementById('show-averages').checked;
 
             try {
+                showLoading();
                 const response = await fetch(`/api/water-logs?from=${fromDate}&to=${toDate}`);
                 const data = await response.json();
 
@@ -179,6 +181,9 @@
                 });
             } catch (error) {
                 console.error('Error loading water data:', error);
+                showError('Error loading water data');
+            } finally {
+                hideLoading();
             }
         }
 
@@ -187,6 +192,7 @@
             const toDate = document.getElementById('meter-date-to').value;
 
             try {
+                showLoading();
                 const response = await fetch(`/api/meter-logs?from=${fromDate}&to=${toDate}`);
                 const data = await response.json();
 
@@ -214,6 +220,9 @@
                 });
             } catch (error) {
                 console.error('Error loading meter data:', error);
+                showError('Error loading meter data');
+            } finally {
+                hideLoading();
             }
         }
 
@@ -223,6 +232,7 @@
             const chartType = document.getElementById('mileage-chart-type').value;
 
             try {
+                showLoading();
                 const response = await fetch(`/api/mileage-logs?from=${fromDate}&to=${toDate}`);
                 const data = await response.json();
 
@@ -250,6 +260,9 @@
                 });
             } catch (error) {
                 console.error('Error loading mileage data:', error);
+                showError('Error loading mileage data');
+            } finally {
+                hideLoading();
             }
         }
 
@@ -271,5 +284,7 @@
         loadMeterData();
         loadMileageData();
     </script>
+    <div id="error" class="error-message"></div>
+    <script src="scripts/common.js"></script>
 </body>
-</html> 
+</html>
