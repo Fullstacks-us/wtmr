@@ -2,15 +2,19 @@
 const CONFIG = {
     // For local development, use relative paths
     // For GitHub Pages deployment, you'll need to set the API_BASE_URL to your backend server
-    API_BASE_URL: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+    API_BASE_URL: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
         ? '' // Local development - use relative paths
-        : 'https://your-backend-server.com', // Production - replace with actual backend URL
+        : (window.API_BASE_URL || ''), // Production - set window.API_BASE_URL in your deployment
     
     // Environment detection
     isLocal: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1',
     isGitHubPages: window.location.hostname.includes('github.io')
 };
 
+// Warn if API_BASE_URL is not set in production
+if (!CONFIG.isLocal && !CONFIG.API_BASE_URL) {
+    alert('API_BASE_URL is not set for production. Please configure window.API_BASE_URL in your deployment.');
+}
 // API helper functions
 const API = {
     async call(endpoint, options = {}) {
