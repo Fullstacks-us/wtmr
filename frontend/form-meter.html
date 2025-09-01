@@ -68,6 +68,8 @@
         <button type="submit">Save Reading</button>
     </form>
 
+    <div id="error" class="error-message"></div>
+    <script src="scripts/common.js"></script>
     <script>
         // Load last reading on page load
         showLoading();
@@ -87,10 +89,10 @@
         document.getElementById('reading').addEventListener('input', function() {
             const currentReading = parseFloat(this.value);
             const lastReading = parseFloat(document.getElementById('lastReading').textContent);
-            
+
             if (!isNaN(currentReading) && !isNaN(lastReading)) {
                 const delta = currentReading - lastReading;
-                document.getElementById('deltaDisplay').textContent = 
+                document.getElementById('deltaDisplay').textContent =
                     `Delta: ${delta.toFixed(2)}`;
             } else {
                 document.getElementById('deltaDisplay').textContent = '';
@@ -123,7 +125,5 @@
             }
         });
     </script>
-    <div id="error" class="error-message"></div>
-    <script src="scripts/common.js"></script>
 </body>
 </html>
