@@ -11,8 +11,8 @@ const CONFIG = {
     isGitHubPages: window.location.hostname.includes('github.io')
 };
 
-// Warn if API_BASE_URL is not set in production
-if (!CONFIG.isLocal && !CONFIG.API_BASE_URL) {
+// Warn if API_BASE_URL is not set in production (but not in GitHub Pages demo mode)
+if (!CONFIG.isLocal && !CONFIG.isGitHubPages && !CONFIG.API_BASE_URL) {
     alert('API_BASE_URL is not set for production. Please configure window.API_BASE_URL in your deployment.');
 }
 // API helper functions
