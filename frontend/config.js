@@ -37,9 +37,7 @@ const API = {
         } catch (error) {
             console.error('API call failed:', error);
             
-            // Show user-friendly error messages
-            if (CONFIG.isGitHubPages) {
-                alert('API is not available. This is a demo deployment. Please configure your backend server URL in config.js');
+                alert('API is not available. This is a demo deployment. Please set window.API_BASE_URL in your deployment or refer to the deployment documentation for instructions.');
             } else {
                 alert('Cannot connect to API. Please check the server.');
             }
