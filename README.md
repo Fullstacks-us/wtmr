@@ -41,8 +41,8 @@ A lightweight, Tailscale-secured web-based system for logging water tests, meter
 
 1. **Clone & Install**
    ```bash
-   git clone <your-repo>
-   cd personal-productivity
+   git clone https://github.com/Fullstacks-us/wtmr.git
+   cd wtmr
    ```
 
 2. **Backend Setup**
@@ -51,6 +51,7 @@ A lightweight, Tailscale-secured web-based system for logging water tests, meter
    python3 -m venv venv
    source venv/bin/activate  # or `venv\Scripts\activate` on Windows
    pip install -r requirements.txt
+   uvicorn main:app --host 0.0.0.0 --port 8000
    ```
 
 3. **Frontend Setup**
@@ -58,16 +59,19 @@ A lightweight, Tailscale-secured web-based system for logging water tests, meter
    cd frontend
    # For static HTML version:
    python3 -m http.server 3000
-   
-   # OR for Vite version:
-   npm install
-   npm run dev
    ```
 
-4. **Tailscale Setup**
+4. **Tailscale Setup (Optional)**
    - Install Tailscale on your VPS and devices
    - Join devices to your tailnet
    - Access via Tailscale IP
+
+## 🚀 Deployment
+
+This app automatically deploys to GitHub Pages when changes are pushed to `main`. The frontend will be available at:
+https://fullstacks-us.github.io/wtmr/
+
+For backend deployment options and configuration, see [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## 📝 Usage
 

@@ -35,18 +35,29 @@
         <button onclick="location.href='export.html'">Export Data</button>
     </div>
 
+    <script src="config.js"></script>
     <script>
         // Check API health on page load
-        fetch('/health')
-            .then(response => response.json())
-            .then(data => {
-                if (data.status !== 'healthy') {
-                    alert('API is not responding correctly. Please check the server.');
-                }
-            })
-            .catch(error => {
-                alert('Cannot connect to API. Please check the server.');
-            });
+        document.addEventListener('DOMContentLoaded', function() {
+            if (CONFIG.isGitHubPages) {
+                // Show a notice for GitHub Pages deployment
+                const notice = document.createElement('div');
+                notice.style.cssText = 'background: #e3f2fd; border: 1px solid #2196f3; padding: 10px; margin: 10px 0; border-radius: 4px;';
+                notice.innerHTML = '<strong>Demo Mode:</strong> This is a static deployment. To use with live data, configure your backend server URL in config.js';
+                document.body.insertBefore(notice, document.body.firstChild);
+                return;
+            }
+
+            API.get('/health')
+                .then(data => {
+                    if (data.status !== 'healthy') {
+                        alert('API is not responding correctly. Please check the server.');
+                    }
+                })
+                .catch(error => {
+                    // Error handling is done in the API.call method
+                });
+        });
     </script>
 </body>
 </html> 
