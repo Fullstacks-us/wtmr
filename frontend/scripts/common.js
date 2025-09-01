@@ -31,16 +31,7 @@ function showError(message) {
         err = document.createElement('div');
         err.id = 'error';
         err.className = 'error-message';
-        // Optionally style the error element if not styled via CSS
-        err.style.position = 'fixed';
-        err.style.top = '20px';
-        err.style.left = '50%';
-        err.style.transform = 'translateX(-50%)';
-        err.style.backgroundColor = '#f44336';
-        err.style.color = '#fff';
-        err.style.padding = '12px 24px';
-        err.style.borderRadius = '4px';
-        err.style.zIndex = '1000';
+        // Error element styling is handled via the 'error-message' CSS class
         document.body.appendChild(err);
     }
     err.textContent = message;
