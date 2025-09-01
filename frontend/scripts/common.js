@@ -26,12 +26,24 @@ function hideLoading() {
 }
 
 function showError(message) {
-    const err = document.getElementById('error');
-    if (err) {
-        err.textContent = message;
-    } else {
-        alert(message);
+    let err = document.getElementById('error');
+    if (!err) {
+        err = document.createElement('div');
+        err.id = 'error';
+        err.className = 'error-message';
+        // Optionally style the error element if not styled via CSS
+        err.style.position = 'fixed';
+        err.style.top = '20px';
+        err.style.left = '50%';
+        err.style.transform = 'translateX(-50%)';
+        err.style.backgroundColor = '#f44336';
+        err.style.color = '#fff';
+        err.style.padding = '12px 24px';
+        err.style.borderRadius = '4px';
+        err.style.zIndex = '1000';
+        document.body.appendChild(err);
     }
+    err.textContent = message;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
