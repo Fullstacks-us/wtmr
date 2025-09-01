@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Water Meter Reading</title>
+    <link rel="stylesheet" href="styles.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -182,8 +183,9 @@
         // Form submission
         document.getElementById('editForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const formData = new FormData(e.target);
+            showLoading();
             try {
                 const response = await fetch(`/api/meter-log/${logId}`, {
                     method: 'PUT',
@@ -197,12 +199,16 @@
                 window.location.href = 'history.html';
             } catch (error) {
                 console.error('Error saving changes:', error);
-                alert('Error saving changes');
+                showError('Error saving changes');
+            } finally {
+                hideLoading();
             }
         });
 
         // Initial load
         loadLogData();
     </script>
+    <div id="error" class="error-message"></div>
+    <script src="scripts/common.js"></script>
 </body>
-</html> 
+</html>

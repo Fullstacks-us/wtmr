@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Mileage Log</title>
+    <link rel="stylesheet" href="styles.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -159,7 +160,7 @@
         // Form submission
         document.getElementById('editForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const formData = new FormData(e.target);
             const data = {
                 start_location: formData.get('start_location'),
@@ -168,6 +169,7 @@
                 purpose: formData.get('purpose'),
                 billable: formData.get('billable') === 'on'
             };
+            showLoading();
 
             try {
                 const response = await fetch(`/api/mileage-log/${logId}`, {
@@ -185,12 +187,16 @@
                 window.location.href = 'history.html';
             } catch (error) {
                 console.error('Error saving changes:', error);
-                alert('Error saving changes');
+                showError('Error saving changes');
+            } finally {
+                hideLoading();
             }
         });
 
         // Initial load
         loadLogData();
     </script>
+    <div id="error" class="error-message"></div>
+    <script src="scripts/common.js"></script>
 </body>
-</html> 
+</html>

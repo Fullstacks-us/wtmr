@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Export Data</title>
+    <link rel="stylesheet" href="styles.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -116,8 +117,9 @@
         async function exportData(type, format) {
             const fromDate = document.getElementById(`${type}-date-from`).value;
             const toDate = document.getElementById(`${type}-date-to`).value;
-            
+
             try {
+                showLoading();
                 const response = await fetch(`/api/export/${type}?format=${format}&from=${fromDate}&to=${toDate}`);
                 if (!response.ok) throw new Error('Export failed');
                 
@@ -132,15 +134,18 @@
                 a.remove();
             } catch (error) {
                 console.error('Export error:', error);
-                alert('Error exporting data');
+                showError('Error exporting data');
+            } finally {
+                hideLoading();
             }
         }
 
         async function exportAllData(format) {
             const fromDate = document.getElementById('all-date-from').value;
             const toDate = document.getElementById('all-date-to').value;
-            
+
             try {
+                showLoading();
                 const response = await fetch(`/api/export/all?format=${format}&from=${fromDate}&to=${toDate}`);
                 if (!response.ok) throw new Error('Export failed');
                 
@@ -155,9 +160,13 @@
                 a.remove();
             } catch (error) {
                 console.error('Export error:', error);
-                alert('Error exporting data');
+                showError('Error exporting data');
+            } finally {
+                hideLoading();
             }
         }
     </script>
+    <div id="error" class="error-message"></div>
+    <script src="scripts/common.js"></script>
 </body>
-</html> 
+</html>

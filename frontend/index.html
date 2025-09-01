@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Water/Mileage Logger</title>
+    <link rel="stylesheet" href="styles.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -35,18 +36,25 @@
         <button onclick="location.href='export.html'">Export Data</button>
     </div>
 
+    <div id="error" class="error-message"></div>
+    <script src="scripts/common.js"></script>
     <script>
         // Check API health on page load
-        fetch('/health')
-            .then(response => response.json())
-            .then(data => {
+        async function checkHealth() {
+            showLoading();
+            try {
+                const response = await fetch('/health');
+                const data = await response.json();
                 if (data.status !== 'healthy') {
-                    alert('API is not responding correctly. Please check the server.');
+                    showError('API is not responding correctly. Please check the server.');
                 }
-            })
-            .catch(error => {
-                alert('Cannot connect to API. Please check the server.');
-            });
+            } catch (error) {
+                showError('Cannot connect to API. Please check the server.');
+            } finally {
+                hideLoading();
+            }
+        }
+        checkHealth();
     </script>
 </body>
 </html> 
